@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Semantic tokens ───────────────────────────────────────────────────────
+   Channel triples so Tailwind can apply opacity. Light is the base; dark
+   redefines the same names, so no component ever knows which theme is active. */
+:root {
+  --surface-page: 250 250 249; /* warm off-white — paper, not blue-grey */
+  --surface-card: 255 255 255;
+  --surface-sunken: 245 245 244;
+  --border-subtle: 231 229 228;
+  --border-strong: 214 211 209;
+  --text-primary: 28 25 23;
+  --text-secondary: 87 83 78;
+  --text-muted: 120 113 108;
+  --accent: 15 91 106; /* deep indigo-teal, never used near a verdict */
+  --accent-soft: 236 246 248;
+
+  --verdict-true-fill: 240 253 244;
+  --verdict-true-edge: 22 128 61;
+  --verdict-true-text: 20 83 45;
+  --verdict-false-fill: 254 242 242;
+  --verdict-false-edge: 185 28 28;
+  --verdict-false-text: 127 29 29;
+  --verdict-misleading-fill: 255 247 237;
+  --verdict-misleading-edge: 194 91 12;
+  --verdict-misleading-text: 124 45 18;
+  --verdict-unverified-fill: 248 250 251;
+  --verdict-unverified-edge: 100 116 139;
+  --verdict-unverified-text: 51 65 85;
+}
+
+.dark {
+  --surface-page: 24 24 27;
+  --surface-card: 32 32 36;
+  --surface-sunken: 39 39 44;
+  --border-subtle: 55 55 61;
+  --border-strong: 75 75 82;
+  --text-primary: 244 244 245;
+  --text-secondary: 190 190 196;
+  --text-muted: 150 150 158;
+  --accent: 94 199 216;
+  --accent-soft: 22 47 53;
+
+  /* Lower-saturation variants so contrast holds on dark surfaces. */
+  --verdict-true-fill: 20 45 32;
+  --verdict-true-edge: 74 222 128;
+  --verdict-true-text: 187 247 208;
+  --verdict-false-fill: 56 24 24;
+  --verdict-false-edge: 248 113 113;
+  --verdict-false-text: 254 202 202;
+  --verdict-misleading-fill: 56 34 15;
+  --verdict-misleading-edge: 251 173 60;
+  --verdict-misleading-text: 254 224 180;
+  --verdict-unverified-fill: 39 42 48;
+  --verdict-unverified-edge: 148 163 184;
+  --verdict-unverified-text: 226 232 240;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-page text-ink font-ui text-body antialiased;
+  }
+
+  /* Bangla needs more leading than Latin: conjuncts and matras (ি ী ু ৃ ে ৌ)
+     collide at Latin line-heights. Applied by lang attribute so mixed pages get
+     it right per node. */
+  :lang(bn) {
+    font-family: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
+    line-height: 1.75;
+    /* Never letter-space Bangla — it breaks conjunct rendering. */
+    letter-spacing: normal;
+  }
+
+  /* Uppercase does nothing to Bangla and signals nobody looked. */
+  :lang(bn).uppercase,
+  :lang(bn) .uppercase {
+    text-transform: none;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2;
+    --tw-ring-offset-color: rgb(var(--surface-page));
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.16);
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-card border border-hairline rounded-lg shadow-sm;
+  }
+
+  .label-micro {
+    @apply text-micro font-semibold uppercase tracking-wider text-ink-muted;
+  }
+
+  /* Skip link: visible only once focused. */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50
+           focus:rounded focus:bg-card focus:px-4 focus:py-2 focus:shadow-md;
+  }
+}
+
+/* Honour the OS setting: no transitions, no pulses, no slide-ins. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
