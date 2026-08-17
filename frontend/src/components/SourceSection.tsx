@@ -1,6 +1,7 @@
 import { detectLanguage, formatPublishedDate } from '../lib/format'
 import { RELIABILITY_META, SOURCE_TYPE_LABELS, STANCE_STYLES } from '../lib/verdict'
 import type { Source, SourceAssessment } from '../types'
+import { ExternalIcon } from './icons'
 
 interface ReliabilityMeterProps {
   filled: number
@@ -58,9 +59,7 @@ function SourceCard({ index, source, assessment, highlighted }: CardProps) {
           {source.title}
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
-        <span aria-hidden="true" className="text-ink-muted">
-          ↗
-        </span>
+        <ExternalIcon className="mt-1 text-ink-muted" />
       </div>
 
       <p className="mt-1 truncate text-small text-ink-muted">{source.domain}</p>
@@ -87,7 +86,7 @@ function SourceCard({ index, source, assessment, highlighted }: CardProps) {
         {stance && (
           <>
             <span aria-hidden="true">·</span>
-            <span className={`font-medium ${stance.text}`}>{stance.label} the claim</span>
+            <span className={`font-medium ${stance.text}`}>{stance.sentence}</span>
           </>
         )}
       </div>

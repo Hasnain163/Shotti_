@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { detectLanguage } from '../lib/format'
 import { ScreenshotDropzone } from './ScreenshotDropzone'
+import { ImageIcon } from './icons'
 
 const MAX_CLAIM = 1000
 
@@ -98,7 +99,7 @@ export function ClaimComposer({
                        text-ink-soft hover:bg-sunken hover:text-ink transition-colors duration-micro
                        disabled:opacity-50 min-h-[44px]"
           >
-            <span aria-hidden="true">🖼</span> Screenshot
+            <ImageIcon /> Screenshot
           </button>
           <span id="claim-hint" className="text-micro text-ink-muted hidden sm:inline">
             {file ? 'The claim will be read from your image' : 'Ctrl + Enter to verify'}

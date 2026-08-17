@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { MoonIcon, SunIcon } from './icons'
 
 interface Props {
   children: ReactNode
@@ -50,7 +51,7 @@ export function AppShell({ children, onShowAbout, onHome }: Props) {
               className="px-3 py-2 text-small text-ink-soft hover:text-ink rounded transition-colors duration-micro"
               aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
             >
-              {dark ? '☀' : '☾'}
+              {dark ? <SunIcon /> : <MoonIcon />}
             </button>
           </nav>
         </div>

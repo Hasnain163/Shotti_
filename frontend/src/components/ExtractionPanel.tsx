@@ -1,5 +1,6 @@
 import { detectLanguage } from '../lib/format'
 import type { ScreenshotExtraction } from '../types'
+import { ImageIcon } from './icons'
 
 const KIND_LABELS: Record<string, string> = {
   social_post: 'Social media post',
@@ -28,7 +29,7 @@ export function ExtractionPanel({ extraction }: Props) {
       className="rounded-lg border border-hairline bg-sunken p-4 sm:p-5"
     >
       <h2 id="extraction-heading" className="label-micro mb-3 flex items-center gap-2">
-        <span aria-hidden="true">🖼</span> Read from your image
+        <ImageIcon /> Read from your image
       </h2>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-small text-ink-muted">

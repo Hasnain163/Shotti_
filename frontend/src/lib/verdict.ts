@@ -75,10 +75,28 @@ export function confidenceLabel(score: number): string {
   return 'Almost no evidence'
 }
 
-export const STANCE_STYLES: Record<Stance, { label: string; rail: string; text: string }> = {
-  supports: { label: 'Supports', rail: 'bg-true-edge', text: 'text-true-text' },
-  contradicts: { label: 'Contradicts', rail: 'bg-false-edge', text: 'text-false-text' },
-  neutral: { label: 'Neutral', rail: 'bg-hairline-strong', text: 'text-ink-muted' },
+export const STANCE_STYLES: Record<
+  Stance,
+  { label: string; sentence: string; rail: string; text: string }
+> = {
+  supports: {
+    label: 'Supports',
+    sentence: 'Supports the claim',
+    rail: 'bg-true-edge',
+    text: 'text-true-text',
+  },
+  contradicts: {
+    label: 'Contradicts',
+    sentence: 'Contradicts the claim',
+    rail: 'bg-false-edge',
+    text: 'text-false-text',
+  },
+  neutral: {
+    label: 'Neutral',
+    sentence: 'Neither supports nor contradicts',
+    rail: 'bg-hairline-strong',
+    text: 'text-ink-muted',
+  },
 }
 
 /** Reliability renders as a 3-segment meter plus this label — never a colour dot

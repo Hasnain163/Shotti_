@@ -1,4 +1,5 @@
 import { detectLanguage } from '../lib/format'
+import { InfoIcon } from './icons'
 
 interface Props {
   notes: string[]
@@ -17,7 +18,7 @@ export function ContextPanel({ notes }: Props) {
       className="rounded-lg border border-hairline bg-sunken p-4 sm:p-5"
     >
       <h2 id="context-heading" className="label-micro mb-3 flex items-center gap-2">
-        <span aria-hidden="true">ⓘ</span> Important context
+        <InfoIcon /> Important context
       </h2>
 
       <ul className="space-y-2">
