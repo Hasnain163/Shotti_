@@ -12,7 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import get_settings
 from app.dependencies import close_services
-from app.routers import health, verify
+from app.routers import health, screenshot, verify
 from app.utils.errors import ErrorResponse, ShottiError
 
 settings = get_settings()
@@ -86,6 +86,7 @@ async def handle_unexpected_error(_: Request, exc: Exception) -> JSONResponse:
 
 app.include_router(health.router, prefix="/api")
 app.include_router(verify.router, prefix="/api")
+app.include_router(screenshot.router, prefix="/api")
 
 
 @app.get("/", include_in_schema=False)

@@ -6,6 +6,7 @@ python-dotenv==1.0.1
 httpx==0.28.1
 google-genai==2.18.1
 firecrawl-py==4.35.1
+python-multipart==0.0.20
 
 # tests
 pytest==8.3.4

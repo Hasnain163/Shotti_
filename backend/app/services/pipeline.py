@@ -29,12 +29,24 @@ from app.config import Settings
 from app.models.analysis import EvidenceAnalysis
 from app.models.claim import ClaimAnalysis
 from app.models.source import ResearchBundle
-from app.models.verify import VerifyMeta, VerifyRequest, VerifyResponse
+from app.models.verify import (
+    MAX_CLAIM_LENGTH,
+    ScreenshotVerifyResponse,
+    Verdict,
+    VerifyMeta,
+    VerifyRequest,
+    VerifyResponse,
+)
 from app.services.firecrawl import FirecrawlService
 from app.services.gemini import GeminiService
 from app.utils.errors import ServiceError
+from app.utils.text import truncate_text
 
 logger = logging.getLogger(__name__)
+
+# Leaves room for the ellipsis truncate_text may append, so a response claim can
+# always be fed back through VerifyRequest without tripping its max_length.
+MAX_RESPONSE_CLAIM_CHARS = MAX_CLAIM_LENGTH - 10
 
 
 def make_claim_id(claim: str) -> str:
@@ -101,8 +113,10 @@ class VerificationPipeline:
         )
 
         # No claim in the image means there is nothing to research. Returning
-        # UNVERIFIED here is honest and costs no further API calls.
-        if not extraction.has_factual_claim or not extraction.primary_claim:
+        # UNVERIFIED here is honest and costs no further API calls. The length check
+        # also keeps a stray one-word extraction out of VerifyRequest, whose own
+        # minimum would otherwise raise a validation error from deep in the pipeline.
+        if not extraction.has_factual_claim or len(extraction.primary_claim.strip()) < 3:
             logger.info("screenshot contains no checkable claim; skipping verification")
             reason = extraction.notes or (
                 "No factual claim could be read from this image."

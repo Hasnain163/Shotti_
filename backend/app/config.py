@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     # Whole-pipeline ceiling, so a slow stage cannot hang the HTTP request forever.
     pipeline_timeout_seconds: float = 90.0
 
+    # Screenshot uploads. 5 MB comfortably covers a phone screenshot.
+    screenshot_max_bytes: int = 5 * 1024 * 1024
+
     elevenlabs_api_key: str | None = None
     elevenlabs_voice_id: str | None = None
 

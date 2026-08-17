@@ -16,7 +16,10 @@ from app.models.claim import DetectedLanguage
 from app.utils.text import truncate_text
 
 MAX_EXTRACTED_TEXT_CHARS = 4_000
-MAX_CLAIM_CHARS = 1_000
+# Must stay under models.verify.MAX_CLAIM_LENGTH (1000) with room for the ellipsis
+# truncate_text may append, since the extracted claim is fed back through
+# VerifyRequest. Not imported from there because that module imports this one.
+MAX_CLAIM_CHARS = 950
 
 
 class ScreenshotKind(StrEnum):
