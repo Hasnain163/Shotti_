@@ -1,0 +1,17 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+# Mocked suite only by default; `-m live` opts into real API calls.
+addopts = "-q -m 'not live'"
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "live: hits real external APIs; requires credentials and network",
+]
+filterwarnings = [
+    # google-genai's BaseApiClient.__del__ builds an aclose() coroutine and passes it
+    # to get_running_loop().create_task(). Under pytest the loop is already closed at
+    # GC time, so the coroutine is never awaited. SDK-internal and harmless, but it
+    # would otherwise bury our own warnings in noise.
+    "ignore:coroutine 'BaseApiClient.aclose' was never awaited:RuntimeWarning",
+]
