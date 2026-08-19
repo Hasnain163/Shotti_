@@ -1,9 +1,10 @@
 """Application configuration, loaded from environment variables."""
 
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 # The repo-root `.env` lives two levels above this file (backend/app/config.py).
 _ENV_FILE = "../.env"
@@ -63,7 +64,11 @@ class Settings(BaseSettings):
     elevenlabs_api_key: str | None = None
     elevenlabs_voice_id: str | None = None
 
-    cors_origins: list[str] = Field(
+    # NoDecode is essential, not cosmetic: without it pydantic-settings tries to
+    # JSON-decode any list-typed environment variable before validators run, so a
+    # normal "https://a.app,https://b.app" value raises SettingsError and the app
+    # never starts. NoDecode hands the raw string to the validator below instead.
+    cors_origins: Annotated[list[str], NoDecode] = Field(
         default=[
             "http://localhost:5173",
             "http://127.0.0.1:5173",
@@ -73,9 +78,21 @@ class Settings(BaseSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _split_origins(cls, value: object) -> object:
-        """Accept a comma-separated string from the env file as well as a list."""
+        """Accept a comma-separated string, a JSON array, or a list.
+
+        Hosting dashboards only take plain strings, so comma-separated is the form
+        that actually gets typed in practice.
+        """
         if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
+            text = value.strip()
+            if text.startswith("["):
+                import json
+
+                try:
+                    return json.loads(text)
+                except ValueError:
+                    pass
+            return [origin.strip() for origin in text.split(",") if origin.strip()]
         return value
 
     def configured_services(self) -> dict[str, bool]:

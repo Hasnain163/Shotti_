@@ -1,0 +1,47 @@
+# Render Blueprint for the Shotti? AI backend.
+#
+# Why every line here matters: without it Render auto-detects a Python app at the
+# repository ROOT and runs `pip install -r requirements.txt` there — but the
+# requirements file lives in backend/, so the build fails before it starts.
+#
+# The frontend is deployed separately (see netlify.toml). This service is API-only.
+
+services:
+  - type: web
+    name: shotti-ai-api
+    runtime: python
+    plan: free
+
+    # THE FIX: treat backend/ as the project root, so requirements.txt is found.
+    rootDir: backend
+
+    buildCommand: pip install -r requirements.txt
+    # $PORT is injected by Render and must be honoured, or the service is marked
+    # unhealthy no matter how well it runs.
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+    # Render restarts the service if this stops answering 200.
+    healthCheckPath: /api/health
+
+    envVars:
+      # Render defaults to the newest Python (3.14), which has no wheels for some
+      # pinned dependencies. Pin to the version the project was built and tested on.
+      - key: PYTHON_VERSION
+        value: 3.13.5
+
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
+
+      # sync:false means "prompt me in the dashboard, never store it in the repo".
+      # Secrets must never be committed, and a Blueprint file is committed.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FIRECRAWL_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+
+      # Must list the Netlify origin exactly, e.g. https://shotti-ai.netlify.app
+      # The browser blocks the API call otherwise.
+      - key: CORS_ORIGINS
+        sync: false

@@ -1,0 +1,23 @@
+# Netlify configuration for the Shotti? AI frontend.
+#
+# Netlify otherwise builds from the repository root, where there is no package.json,
+# and fails the same way Render did.
+
+[build]
+  # THE FIX: build inside frontend/, and publish the dist it produces.
+  base = "frontend"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Vite inlines VITE_* variables at BUILD time, not at runtime. VITE_API_BASE_URL
+# must therefore be set in Netlify's dashboard before the build runs — setting it
+# afterwards changes nothing until you redeploy.
+
+# Single-page app: serve index.html for any path rather than a 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
