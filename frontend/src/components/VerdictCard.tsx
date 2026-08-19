@@ -38,9 +38,13 @@ export function VerdictCard({ verdict, confidence, explanation, degraded }: Prop
           </span>
 
           <div className="min-w-0 flex-1">
+            {/* Focusable so completion can move focus here: a keyboard or screen
+                reader user is taken to the answer instead of being left at the top
+                of a long page. */}
             <h2
               id="verdict-label"
-              className={`font-display text-h1 font-bold ${style.text}`}
+              tabIndex={-1}
+              className={`font-display text-h1 font-bold outline-none ${style.text}`}
             >
               {style.label}
             </h2>

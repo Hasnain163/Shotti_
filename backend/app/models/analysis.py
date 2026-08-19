@@ -329,10 +329,15 @@ def _reconcile_verdict(
         )
         return Verdict.UNVERIFIED, min(confidence, 0.3), notes
 
-    if not supporting and not contradicting and verdict is not Verdict.UNVERIFIED:
-        logger.warning("downgrading %s with no grounded evidence at all", verdict)
-        notes.append("The sources retrieved did not directly address this claim.")
-        return Verdict.UNVERIFIED, min(confidence, 0.3), notes
+    if not supporting and not contradicting:
+        if verdict is not Verdict.UNVERIFIED:
+            logger.warning("downgrading %s with no grounded evidence at all", verdict)
+            notes.append("The sources retrieved did not directly address this claim.")
+            verdict = Verdict.UNVERIFIED
+        # An already-unverified verdict lands here too, and it must lose its
+        # confidence as well: nothing traceable is behind it, so a high score would
+        # render as "Unverified — strong evidence", which contradicts itself.
+        return verdict, min(confidence, 0.3), notes
 
     # A confident verdict on a single source overstates what one page can settle.
     if confidence > 0.8 and len(sources) < 2:

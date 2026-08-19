@@ -33,7 +33,13 @@ export function ProgressPanel({ claim, stageIndex, elapsedMs, isImage }: Props) 
         </p>
       )}
 
-      <ol className="space-y-3" aria-live="polite" aria-atomic="false">
+      {/* One small live region announcing only the current stage. Putting aria-live on
+          the list itself made a screen reader re-read all four stages on every change. */}
+      <p className="sr-only" aria-live="polite">
+        {stages[stageIndex]?.label ?? 'Working'}
+      </p>
+
+      <ol className="space-y-3">
         {stages.map((stage, index) => {
           const done = index < stageIndex
           const active = index === stageIndex

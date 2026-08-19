@@ -55,7 +55,10 @@ export default function App() {
   // taken to the answer rather than left at the top of the page.
   useEffect(() => {
     if (phase !== 'done') return
-    document.getElementById('verdict-label')?.scrollIntoView({ block: 'center' })
+    const heading = document.getElementById('verdict-label')
+    heading?.scrollIntoView({ block: 'center' })
+    // preventScroll: scrollIntoView above already placed it; focusing must not fight it.
+    heading?.focus({ preventScroll: true })
   }, [phase])
 
   if (view === 'about') {

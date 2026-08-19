@@ -101,8 +101,17 @@ export function ClaimComposer({
           >
             <ImageIcon /> Screenshot
           </button>
-          <span id="claim-hint" className="text-micro text-ink-muted hidden sm:inline">
-            {file ? 'The claim will be read from your image' : 'Ctrl + Enter to verify'}
+          {/* When an image is attached the typed text is not used. That hint must show
+              on mobile too — hiding it there let text be silently discarded. */}
+          <span
+            id="claim-hint"
+            className={`text-micro text-ink-muted ${file ? '' : 'hidden sm:inline'}`}
+          >
+            {file
+              ? trimmed
+                ? 'Typed text is ignored — the claim is read from your image'
+                : 'The claim will be read from your image'
+              : 'Ctrl + Enter to verify'}
           </span>
         </div>
 

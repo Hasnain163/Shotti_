@@ -55,6 +55,11 @@ class Settings(BaseSettings):
     # Screenshot uploads. 5 MB comfortably covers a phone screenshot.
     screenshot_max_bytes: int = 5 * 1024 * 1024
 
+    # Repeat verifications of the same claim are served from memory rather than
+    # re-spending API quota. Set the TTL to 0 to disable.
+    cache_ttl_seconds: float = 900.0
+    cache_max_entries: int = 128
+
     elevenlabs_api_key: str | None = None
     elevenlabs_voice_id: str | None = None
 

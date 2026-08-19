@@ -74,6 +74,11 @@ function guidanceFor(error: ApiError): { title: string; hint?: string } {
         title: 'A service failed',
         hint: 'This is usually temporary and clears on a retry.',
       }
+    case 'timeout':
+      return {
+        title: 'That took too long',
+        hint: 'A verification normally finishes in 25–40 seconds. The AI or research service is probably overloaded.',
+      }
     case 'network_error':
       return {
         title: 'Cannot reach the server',

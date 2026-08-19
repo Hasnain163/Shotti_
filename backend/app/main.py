@@ -2,12 +2,14 @@
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import get_settings
@@ -89,6 +91,23 @@ app.include_router(verify.router, prefix="/api")
 app.include_router(screenshot.router, prefix="/api")
 
 
-@app.get("/", include_in_schema=False)
-async def root() -> dict[str, str]:
-    return {"app": settings.app_name, "docs": "/docs", "health": "/api/health"}
+# Serve the built frontend when it exists, so one process and one URL provide the
+# whole app. Mounted last and only if `frontend/dist` is present: during development
+# Vite serves the UI on :5173 and proxies here, and the test suite never builds it.
+_FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
+if _FRONTEND_DIST.is_dir():
+    logger.info("serving built frontend from %s", _FRONTEND_DIST)
+    # html=True makes index.html the directory index, which is all a single-page app
+    # needs. Mounted at "/" after the API routers, so /api is never shadowed.
+    app.mount("/", StaticFiles(directory=_FRONTEND_DIST, html=True), name="ui")
+else:
+
+    @app.get("/", include_in_schema=False)
+    async def root() -> dict[str, str]:
+        return {
+            "app": settings.app_name,
+            "docs": "/docs",
+            "health": "/api/health",
+            "ui": "not built — run `npm run build` in frontend/, or use the Vite dev server",
+        }

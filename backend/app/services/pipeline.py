@@ -37,6 +37,7 @@ from app.models.verify import (
     VerifyRequest,
     VerifyResponse,
 )
+from app.services.cache import TTLCache
 from app.services.firecrawl import FirecrawlService
 from app.services.gemini import GeminiService
 from app.utils.errors import ServiceError
@@ -62,10 +63,12 @@ class VerificationPipeline:
         settings: Settings,
         gemini: GeminiService,
         firecrawl: FirecrawlService,
+        cache: TTLCache[VerifyResponse] | None = None,
     ) -> None:
         self._settings = settings
         self._gemini = gemini
         self._firecrawl = firecrawl
+        self._cache = cache
 
     async def verify(self, request: VerifyRequest, today: date | None = None) -> VerifyResponse:
         """Verify one claim end to end.
@@ -84,9 +87,21 @@ class VerificationPipeline:
             len(request.claim),
         )
 
+        cached = self._cache.get(claim_id) if self._cache else None
+        if cached is not None:
+            logger.info("[%s] served from cache; no API quota spent", claim_id)
+            # Copied so a caller mutating the response cannot corrupt the cache, and
+            # flagged as cached so the timing shown to the user stays truthful.
+            return cached.model_copy(
+                update={"meta": cached.meta.model_copy(update={"cached": True})}
+            )
+
         try:
             async with asyncio.timeout(self._settings.pipeline_timeout_seconds):
-                return await self._run(request, claim_id, started, today)
+                response = await self._run(request, claim_id, started, today)
+            if self._cache is not None:
+                self._cache.set(claim_id, response)
+            return response
         except TimeoutError as exc:
             elapsed = int((time.perf_counter() - started) * 1000)
             logger.error("[%s] verification timed out after %dms", claim_id, elapsed)
@@ -108,6 +123,28 @@ class VerificationPipeline:
         started = time.perf_counter()
         logger.info("screenshot verification started: %s, %d bytes", mime_type, len(image_bytes))
 
+        # The timeout has to cover reading the image as well as verifying the claim.
+        # Bounding only the inner verify() would allow retried image reads to add a
+        # second full budget on top, which is how a request ends up hanging past three
+        # minutes — long past the point a user has given up.
+        try:
+            async with asyncio.timeout(self._settings.pipeline_timeout_seconds):
+                return await self._run_screenshot(image_bytes, mime_type, started, today)
+        except TimeoutError as exc:
+            logger.error(
+                "screenshot verification timed out after %dms", _elapsed_ms(started)
+            )
+            raise ServiceError(
+                "Reading and checking that image took too long. Please try again."
+            ) from exc
+
+    async def _run_screenshot(
+        self,
+        image_bytes: bytes,
+        mime_type: str,
+        started: float,
+        today: date | None,
+    ) -> ScreenshotVerifyResponse:
         extraction = await self._gemini.extract_claim_from_image(
             image_bytes=image_bytes, mime_type=mime_type
         )

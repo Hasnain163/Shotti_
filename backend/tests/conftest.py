@@ -25,6 +25,26 @@ def pytest_runtest_makereport(item, call):
         report.wasxfail = "upstream rate limit / quota exhausted"
 
 
+@pytest.fixture(autouse=True)
+def reset_process_state():
+    """Clear the process-wide services and result cache between tests.
+
+    These are deliberately module-level singletons in production — one HTTP client
+    pool, one shared cache. In tests that means state leaks from one test into the
+    next: a cached verdict answers a later test's request before its mocks are ever
+    called, which is exactly what happened when the cache was introduced.
+    """
+    import app.dependencies as deps
+
+    deps._cache = None
+    deps._gemini = None
+    deps._firecrawl = None
+    yield
+    deps._cache = None
+    deps._gemini = None
+    deps._firecrawl = None
+
+
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(app)

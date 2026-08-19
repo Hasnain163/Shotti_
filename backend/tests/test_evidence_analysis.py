@@ -507,6 +507,23 @@ async def test_high_confidence_survives_with_several_sources() -> None:
 
 
 @pytest.mark.asyncio
+async def test_unverified_with_no_evidence_cannot_be_confident() -> None:
+    """Otherwise the UI shows "Unverified" beside "Strong evidence"."""
+    service = GeminiService(make_settings())
+    payload = make_payload(
+        verdict="UNVERIFIED",
+        confidence_score=0.95,
+        supporting_evidence=[],
+        contradicting_evidence=[],
+    )
+
+    result = await analyze(service, payload, sources=[make_source(0), make_source(1)])
+
+    assert result.verdict is Verdict.UNVERIFIED
+    assert result.confidence_score <= 0.3
+
+
+@pytest.mark.asyncio
 async def test_certainty_is_never_reported() -> None:
     """A few scraped pages cannot put a claim beyond doubt."""
     service = GeminiService(make_settings())

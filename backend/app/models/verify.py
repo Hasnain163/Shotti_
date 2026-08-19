@@ -74,6 +74,13 @@ class VerifyMeta(BaseModel):
         default=False,
         description="True when a stage failed or was skipped, so the result is partial.",
     )
+    cached: bool = Field(
+        default=False,
+        description=(
+            "True when this result was served from memory rather than researched now, "
+            "so the reported duration is from the original run."
+        ),
+    )
 
 
 class VerifyResponse(BaseModel):

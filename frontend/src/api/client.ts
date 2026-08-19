@@ -42,17 +42,47 @@ async function toApiError(response: Response): Promise<ApiError> {
   )
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+/** Longer than the backend's own 90s ceiling, so a real slow run still completes and
+ *  only a genuinely stuck request trips this. Without a client-side bound, a stalled
+ *  request leaves the progress panel spinning forever — no error, no retry, nothing
+ *  the user can do but reload. */
+const REQUEST_TIMEOUT_MS = 120_000
+
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // One controller for both cancellation sources, so `fetch` sees a single signal.
+  const controller = new AbortController()
+  const caller = init.signal
+  const relayAbort = () => controller.abort()
+  caller?.addEventListener('abort', relayAbort, { once: true })
+
+  let timedOut = false
+  const timer = window.setTimeout(() => {
+    timedOut = true
+    controller.abort()
+  }, REQUEST_TIMEOUT_MS)
+
   let response: Response
   try {
-    response = await fetch(`${BASE}${path}`, init)
-  } catch {
-    // Network-level failure: no response at all. Status 0 marks it retryable.
+    response = await fetch(`${BASE}${path}`, { ...init, signal: controller.signal })
+  } catch (caught) {
+    if (timedOut) {
+      throw new ApiError(
+        'That took too long and was stopped. The services may be busy — try again.',
+        'timeout',
+        504,
+      )
+    }
+    // A caller-initiated abort is not an error; let it propagate so the caller can
+    // recognise its own cancellation and leave the UI alone.
+    if (caller?.aborted) throw caught
     throw new ApiError(
       'Could not reach the server. Check your connection and try again.',
       'network_error',
       0,
     )
+  } finally {
+    window.clearTimeout(timer)
+    caller?.removeEventListener('abort', relayAbort)
   }
 
   if (!response.ok) throw await toApiError(response)
