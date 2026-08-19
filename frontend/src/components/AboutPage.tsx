@@ -1,7 +1,5 @@
-import { VERDICTS } from '../lib/verdict'
-import type { Verdict } from '../types'
+import { VerdictLegend } from './landing/VerdictLegend'
 
-const ORDER: Verdict[] = ['LIKELY_TRUE', 'LIKELY_FALSE', 'MISLEADING', 'UNVERIFIED']
 
 const LIMITS = [
   'It only reads public web pages. Private posts, closed groups, and messages are out of reach.',
@@ -47,30 +45,9 @@ export function AboutPage({ onBack }: Props) {
 
       <section className="mt-10">
         <h2 className="text-h2 font-semibold">The four verdicts</h2>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {ORDER.map((verdict) => {
-            const style = VERDICTS[verdict]
-            return (
-              <li
-                key={verdict}
-                className={`rounded-lg border-2 ${style.edge} ${style.fill} p-4`}
-              >
-                <div className="flex items-center gap-2">
-                  <span aria-hidden="true" className={`text-h3 font-bold ${style.text}`}>
-                    {style.icon}
-                  </span>
-                  <h3 className={`font-display text-h3 font-bold ${style.text}`}>
-                    {style.label}
-                  </h3>
-                  <span lang="bn" className={`text-small ${style.text} opacity-75`}>
-                    {style.labelBn}
-                  </span>
-                </div>
-                <p className="mt-2 text-small text-ink">{style.meaning}</p>
-              </li>
-            )
-          })}
-        </ul>
+        <div className="mt-4">
+          <VerdictLegend />
+        </div>
 
         <p className="mt-4 max-w-measure text-body text-ink-soft">
           <strong className="font-semibold text-ink">Misleading and Unverified are not the

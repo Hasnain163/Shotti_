@@ -120,3 +120,12 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Faint dot texture for the hero. Masked so it fades out rather than stopping at a
+   hard edge, and low-contrast enough to read as paper grain instead of decoration. */
+.dot-grid {
+  background-image: radial-gradient(rgb(var(--text-muted) / 0.16) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.9), transparent 70%);
+  mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.9), transparent 70%);
+}
